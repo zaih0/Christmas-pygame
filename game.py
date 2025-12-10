@@ -26,30 +26,76 @@ except Exception:
 
 pygame.mouse.set_visible(False)
 
+# SHOTS AND SCORES VARIABLES
+score = 0
+shots_fired = 0
+hits = 0
+shoot_cooldown = 0.15
+last_shot_time = 0.0
+muzzle_flash_timer = 0.0
 
-# MAIN GAMER LOOP WHERE GAME LOOP HAPPENS
+# MAKE FLASH STAY WHERE MOUSE WAS CLICKED
+flash_pos = (0, 0)
+
+
+# MAIN GAME LOOP
 running = True
 while running:
+    dt = clock.get_time() / 1000.0
+
+    # EVENTS
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+
+        # 🔫 SHOOTING WITH LEFT MOUSE CLICK
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            shots_fired += 1
+            score += 1   # temporary until enemies added
+
+            muzzle_flash_timer = shoot_cooldown
+            last_shot_time = time.time()
+
+            # SAVE MOUSE POSITION FOR FLASH
+            flash_pos = pygame.mouse.get_pos()
+
+    # GET WHERE THE MOUSE IS
     mx, my = pygame.mouse.get_pos() 
-           
+
+    # BACKGROUND?
     screen.fill((135, 206, 235))
-    
+
+    # DRAW SHOOTY POINTER
     if use_cross_img and cross_img:
         cross_rect.center = (mx, my)
         screen.blit(cross_img, cross_rect)
-        
     else:
-        pygame.draw.line(screen, (0, 0, 0), (mx-12, my), (mx+12, my), 2)
-        pygame.draw.line(screen, (0, 0, 0), (mx, my-12), (mx, my+12), 2)
-        #pygame.draw.line(screen, (255, 255, 255), (mx, my), 4)
-        
-    
+        pygame.draw.line(screen, (255, 192, 203), (mx-12, my), (mx+12, my), 2)
+        pygame.draw.line(screen, (255, 192, 203), (mx, my-12), (mx, my+12), 2)
+        pygame.draw.circle(screen, (255, 255, 255), (mx, my), 4)
+
+    # BIG GUN EFFECT GO BOOM
+    if muzzle_flash_timer > 0:
+        muzzle_flash_timer -= dt 
+
+        alpha = max(0, int(255 * (muzzle_flash_timer / shoot_cooldown)))
+        flash_radius = 24 + int(16 * (muzzle_flash_timer / shoot_cooldown))
+
+        flash_surf = pygame.Surface((flash_radius*2, flash_radius*2), pygame.SRCALPHA)
+        pygame.draw.circle(
+            flash_surf,
+            (255, 255, 0, alpha),
+            (flash_radius, flash_radius),
+            flash_radius
+        )
+
+        # USE SAVED flash_pos NOT mouse pos
+        fx, fy = flash_pos
+        screen.blit(flash_surf, (fx - flash_radius, fy - flash_radius))
+
     pygame.display.flip()
     clock.tick(FPS)
 
-# EXIT AND CLOSING THE WINDOW
+# EXIT
 pygame.quit()
 sys.exit()
