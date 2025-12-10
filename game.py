@@ -30,7 +30,7 @@ pygame.mouse.set_visible(False)
 score = 0
 shots_fired = 0
 hits = 0
-shoot_cooldown = 0.15
+shoot_cooldown = 0.35   # flash stays longer
 last_shot_time = 0.0
 muzzle_flash_timer = 0.0
 
@@ -47,6 +47,12 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+
+        # PRESS ESC TO EXIT GAME
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                pygame.quit()
+                sys.exit()
 
         # 🔫 SHOOTING WITH LEFT MOUSE CLICK
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -78,8 +84,9 @@ while running:
     if muzzle_flash_timer > 0:
         muzzle_flash_timer -= dt 
 
-        alpha = max(0, int(255 * (muzzle_flash_timer / shoot_cooldown)))
-        flash_radius = 24 + int(16 * (muzzle_flash_timer / shoot_cooldown))
+        progress = max(0, muzzle_flash_timer / shoot_cooldown)
+        alpha = max(0, int(255 * (progress ** 0.5)))  # MAKES SHOT TAKE SLOWER TO DISSAPPEAR
+        flash_radius = 24 + int(16 * progress)
 
         flash_surf = pygame.Surface((flash_radius*2, flash_radius*2), pygame.SRCALPHA)
         pygame.draw.circle(
@@ -89,13 +96,13 @@ while running:
             flash_radius
         )
 
-        # USE SAVED flash_pos NOT mouse pos
+        # USE LAST FLASH POINT !
         fx, fy = flash_pos
         screen.blit(flash_surf, (fx - flash_radius, fy - flash_radius))
 
     pygame.display.flip()
     clock.tick(FPS)
 
-# EXIT
+# GAME STOP NOW
 pygame.quit()
 sys.exit()

@@ -10,3 +10,4 @@
 - Player should lose when enemy crosses a line behind Santa
 - High score should be tracked and trying to beat it everytime
 - Maybe adding enemies coming faster after a certain score has been reached
+- Add a game menu to save score and replay if you lost
